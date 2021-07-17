@@ -3,11 +3,15 @@
 #include <chrono>
 #include <string>
 #include <charconv>
-//#include <iomanip>
+
+#define FMT_HEADER_ONLY
+#include "fmt/format.h"
+
 
 int main(int argc, const char **argv) {
+
 	if (argc < 2) {
-		std::cout << "Not enough arguments" << std::endl;
+		fmt::print("Not enough arguments\n");
 		return 1;
 	}
 
@@ -17,23 +21,27 @@ int main(int argc, const char **argv) {
 		const std::string arg(argv[i]);
 		// TODO Check for env args to make cross platform
 		if (arg.length() < 2) {
-			std::cout << "Argument " << i << " has the wrong format: length < 2"
-					<< std::endl;
+			fmt::print("Argument {} has the wrong format: length < 2\n", i);
 			return 2;
 		}
 
+		// Remove time type indicator character
 		const std::string strAmount = arg.substr(0, arg.length() - 1);
 
 		int amount = 0;
 		const std::from_chars_result res = std::from_chars(strAmount.data(),
 				strAmount.data() + strAmount.size(), amount);
 		if (res.ec != std::errc()) {
-			std::cout << "Argument " << i
-					<< " has the wrong format: Couldn't parse number "
-					<< res.ptr << std::endl;
+			// std::from_chars failed
+			fmt::print("Argument {0} has the wrong format: Couldn't parse number {1}\n", i, strAmount);
 			return 3;
 		}
+		if (amount < 0) {
+			fmt::print("Argument {0} is smaller than 0: {1}\n", i, amount);
+			return 4;
+		}
 
+		// Decide by time type indicator
 		const char timeType = *arg.rbegin();
 		switch (timeType) {
 		case 'h':
@@ -46,9 +54,8 @@ int main(int argc, const char **argv) {
 			time += std::chrono::seconds(amount);
 			break;
 		default:
-			std::cout << "Argument " << i << " is the wrong time type: \""
-					<< timeType << "\"" << std::endl;
-			return 2;
+			fmt::print("Argument {0} is of an unknown time type \'{1}\'. Expected \'h\', \'m\' or \'s\'\n", i, timeType);
+			return 5;
 		}
 	}
 
@@ -63,14 +70,14 @@ int main(int argc, const char **argv) {
 		// Current time to display
 		auto displayDuration = end - current;
 
-		std::cout << "\r";
+		fmt::print("\r");
 		// To string
 		const auto hours = std::chrono::duration_cast<std::chrono::hours>(
 				displayDuration);
 		const int iHours = hours.count();
 		if (iHours != 0) {
 			displayDuration -= hours;
-			std::cout << iHours << "h ";
+			fmt::print("{}h ", iHours);
 		}
 
 		const auto minutes = std::chrono::duration_cast<std::chrono::minutes>(
@@ -78,27 +85,30 @@ int main(int argc, const char **argv) {
 		const int iMinutes = minutes.count();
 		if (iMinutes != 0) {
 			displayDuration -= minutes;
-			std::cout << iMinutes << "m ";
+			fmt::print("{}m ", iMinutes);
 		}
 
 		const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(
 				displayDuration);
 		const int iSeconds = seconds.count();
 		if (iSeconds != 0) {
-			std::cout << iSeconds << "s ";
+			fmt::print("{}s ", iSeconds);
 		}
+		fmt::print("           ");
 		std::cout << std::flush;
 
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
-	std::cout << "\r0s" << std::flush;
+
+	fmt::print("\r0s               ");
 
 	// Signal the end (of the world)
 	for (int i = 0; i < 10; i++) {
-		std::cout << "\a" << std::flush;
+		fmt::print("\a");
+		std::cout << std::flush;
 		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
-	std::cout << std::endl;
+	fmt::print("\n");
 
 	return 0;
 }
