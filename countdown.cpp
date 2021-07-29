@@ -7,6 +7,37 @@
 #define FMT_HEADER_ONLY
 #include "fmt/format.h"
 
+void printTime (std::chrono::nanoseconds time) {
+	using namespace std::chrono;
+
+	// HOURS
+	const auto hours = duration_cast<std::chrono::hours>(time);
+	const int iHours = hours.count();
+	fmt::print("\r");
+	if (iHours != 0) {
+		time -= hours;
+		fmt::print("{}h ", iHours);
+	}
+
+	// MINUTES
+	const auto minutes = duration_cast<std::chrono::minutes>(time);
+	const int iMinutes = minutes.count();
+	if (iMinutes != 0) {
+		time -= minutes;
+		fmt::print("{}m ", iMinutes);
+	}
+
+	// SECONDS
+	const auto seconds = duration_cast<std::chrono::seconds>(time);
+	const int iSeconds = seconds.count();
+	if (iSeconds != 0) {
+		fmt::print("{}s ", iSeconds);
+	}
+
+	fmt::print("           ");
+	std::cout << std::flush;
+}
+
 
 int main(int argc, const char **argv) {
 
@@ -60,44 +91,18 @@ int main(int argc, const char **argv) {
 	}
 
 	// Count down
-	const auto start = std::chrono::system_clock::now();
+	auto start = std::chrono::system_clock::now();
 	const auto end = start + time;
 
-	for (auto current = start; current < end;
-			current = std::chrono::system_clock::now()) {
-		//auto t_current = std::chrono::system_clock::to_time_t(current);
-		//std::cout << std::put_time(std::localtime(&t_current), "%F %T") << std::endl;
+	printTime(time);
+
+	start = start + std::chrono::seconds(1);
+
+	for (auto current = start; current < end; current = std::chrono::system_clock::now()) {
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 		// Current time to display
 		auto displayDuration = end - current;
-
-		fmt::print("\r");
-		// To string
-		const auto hours = std::chrono::duration_cast<std::chrono::hours>(
-				displayDuration);
-		const int iHours = hours.count();
-		if (iHours != 0) {
-			displayDuration -= hours;
-			fmt::print("{}h ", iHours);
-		}
-
-		const auto minutes = std::chrono::duration_cast<std::chrono::minutes>(
-				displayDuration);
-		const int iMinutes = minutes.count();
-		if (iMinutes != 0) {
-			displayDuration -= minutes;
-			fmt::print("{}m ", iMinutes);
-		}
-
-		const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(
-				displayDuration);
-		const int iSeconds = seconds.count();
-		if (iSeconds != 0) {
-			fmt::print("{}s ", iSeconds);
-		}
-		fmt::print("           ");
-		std::cout << std::flush;
-
-		std::this_thread::sleep_for(std::chrono::seconds(1));
+		printTime(displayDuration);
 	}
 
 	fmt::print("\r0s               ");
