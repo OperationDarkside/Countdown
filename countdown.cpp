@@ -11,25 +11,25 @@ void printTime (std::chrono::nanoseconds time) {
 	using namespace std::chrono;
 
 	// HOURS
-	const auto hours = duration_cast<std::chrono::hours>(time);
-	const int iHours = hours.count();
+	const auto dur_hours = duration_cast<hours>(time);
+	const int iHours = dur_hours.count();
 	fmt::print("\r");
 	if (iHours != 0) {
-		time -= hours;
+		time -= dur_hours;
 		fmt::print("{}h ", iHours);
 	}
 
 	// MINUTES
-	const auto minutes = duration_cast<std::chrono::minutes>(time);
-	const int iMinutes = minutes.count();
+	const auto dur_minutes = duration_cast<minutes>(time);
+	const int iMinutes = dur_minutes.count();
 	if (iMinutes != 0) {
-		time -= minutes;
+		time -= dur_minutes;
 		fmt::print("{}m ", iMinutes);
 	}
 
 	// SECONDS
-	const auto seconds = duration_cast<std::chrono::seconds>(time);
-	const int iSeconds = seconds.count();
+	const auto dur_seconds = duration_cast<seconds>(time);
+	const int iSeconds = dur_seconds.count();
 	if (iSeconds != 0) {
 		fmt::print("{}s ", iSeconds);
 	}
